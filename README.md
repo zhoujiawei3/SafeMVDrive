@@ -16,16 +16,16 @@ This repository contains the code for the following work:
 
 <p align="center">
   <div align="center">Adversarial vehicle suddenly cuts in; ego vehicle slightly steers right to avoid.</div>
-  <video src="assets/adv/01.mp4" width="100%" style="max-width: 100%; height: auto;" autoplay loop muted playsinline></video>
+  <video src="assets/adv_gif/01-ezgif.com-video-to-gif-converter.gif" width="100%" style="max-width: 100%; height: auto;" autoplay loop muted playsinline></video>
 
   <div align="center">Rear adversarial vehicle suddenly accelerates; ego vehicle also speeds up to evade.</div>
-  <video src="assets/adv/02.mp4" width="100%" style="max-width: 100%; height: auto;" autoplay loop muted playsinline></video>
+  <video src="assets/adv_gif/02-ezgif.com-video-to-gif-converter.gif" width="100%" style="max-width: 100%; height: auto;" autoplay loop muted playsinline></video>
 
   <div align="center">Rear adversarial vehicle suddenly accelerates; ego vehicle changes lane left to evade.</div>
-  <video src="assets/adv/03.mp4" width="100%" style="max-width: 100%; height: auto;" autoplay loop muted playsinline></video>
+  <video src="assets/adv_gif/03-ezgif.com-video-to-gif-converter.gif" width="100%" style="max-width: 100%; height: auto;" autoplay loop muted playsinline></video>
 
   <div align="center">Front adversarial vehicle suddenly slows down; ego vehicle changes lane and decelerates to avoid.</div>
-  <video src="assets/adv/04.mp4" width="100%" style="max-width: 100%; height: auto;" autoplay loop muted playsinline></video>
+  <video src="assets/adv_gif/04-ezgif.com-video-to-gif-converter.gif" width="100%" style="max-width: 100%; height: auto;" autoplay loop muted playsinline></video>
 </p>
 
 ## Abstract
@@ -43,7 +43,7 @@ Each module requires a separate environment.
 
 ### 1. Parsing the nuScenes Dataset and model weights
 
-#### model weights
+#### Model Weights
 
 First, prepare the weights for our three components.
 
@@ -66,6 +66,7 @@ Organize the directory structure as follows:
     │   │   │   ├── global_step2600
     │   │   │   ├── ...        
     │   ├── two-stage-simulator
+    │   │   ├── config.json 
     │   │   ├── iter80000.ckpt
     │   ├── T2VGenerator
     │   │   ├── ctsd_unimlvg_tirda_bm_nwa_60k.pth
@@ -92,7 +93,7 @@ Download the original nuScenes dataset from [nuScenes](https://www.nuscenes.org/
 
 ### 2. VLM-based Adversarial Vehicle Select
 
-Libraries rely on CUDA 12.4.
+Test on CUDA 12.4.
 
 #### Setup
 ```bash
@@ -113,7 +114,7 @@ You can modify the `DATA_COUNT` in the script to change the number of samples ra
 
 #### Setup
 
-Libraries rely on CUDA 11.3.
+Test on CUDA 11.3.
 
 ```bash
 conda create -n safemvdrive-trajectory python=3.9
@@ -217,11 +218,11 @@ data_infos = list(sorted(data["infos"], key=lambda e: (e["scene_token"], e["time
 4. Create a symbolic link to the generated dataset directory at `{ROOT_OF_UNIAD}/data/nuscenes` and execute `{ROOT_OF_UNIAD}/tools/uniad_create_data.sh` to extract metadata.sh to extract metadata.
 5. Run `{ROOT_OF_UNIAD}/tools/uniad_dist_eval.sh` to evaluate.
 
-By default, we use the output `obj_box_col` as the basis for calculating the **collision rate**, which is computed at the **sample level**.
+By default, we use the output `obj_box_col` as the basis for calculating the **sample level collision rate**.
 
-If you prefer to compute the **scene-level collision rate** instead, please modify the following lines accordingly:
+To compute the **scene-level collision rate** instead, please modify the following lines accordingly:
 
-[`planning_metrics.py` (Lines 144–147)](https://github.com/OpenDriveLab/UniAD/blob/dd161b220c22de1c874c3fb8d55979054b24d716/projects/mmdet3d_plugin/uniad/dense_heads/planning_head_plugin/planning_metrics.py#L144-L147)
+[`planning_metrics.py` (Lines 176–179)](https://github.com/zhoujiawei3/SafeMVDrive/blob/5991bab339ce2fd26f384686c11fa3bc6c7be6a9/eval/UniAD/projects/mmdet3d_plugin/uniad/dense_heads/planning_head_plugin/planning_metrics.py#L176-L179)
 
 
 
