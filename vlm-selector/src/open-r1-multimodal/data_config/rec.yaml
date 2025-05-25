@@ -1,0 +1,4 @@
+datasets:
+    - json_path: /data2/zhoujiawei/rec_jsons_processed/refcoco_train.json
+    - json_path: /data2/zhoujiawei/rec_jsons_processed/refcocop_train.json
+    - json_path: /data2/zhoujiawei/rec_jsons_processed/refcocog_train.json

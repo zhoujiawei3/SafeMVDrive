@@ -1,0 +1,10 @@
+__pycache__
+.vscode
+build
+dist
+*.egg-info
+output
+/externals/chamferdist/chamferdist/*.so
+wandb
+taming
+ASAP/out

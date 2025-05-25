@@ -1,0 +1,9 @@
+[submodule "T2VGenerator/externals/TATS"]
+	path = T2VGenerator/externals/TATS
+	url = https://github.com/songweige/TATS.git
+[submodule "T2VGenerator/externals/taming-transformers"]
+	path = T2VGenerator/externals/taming-transformers
+	url = https://github.com/CompVis/taming-transformers.git
+[submodule "T2VGenerator/externals/waymo-open-dataset"]
+	path = T2VGenerator/externals/waymo-open-dataset
+	url = https://github.com/waymo-research/waymo-open-dataset.git

@@ -1,0 +1,336 @@
+{
+    "device": "cuda",
+    "generator_seed": 0,
+    "pipeline": {
+        "_class_name": "dwm.pipelines.ctsd.CrossviewTemporalSD",
+        "common_config": {
+            "disable_crossview": false,
+            "disable_temporal": true,
+            "condition_on_all_frames": true,
+            "added_time_ids": "fps_camera_transforms",
+            "camera_intrinsic_embedding_indices": [
+                0, 4, 2, 5
+            ],
+            "camera_intrinsic_denom_embedding_indices": [
+                1, 1, 0, 1
+            ],
+            "camera_transform_embedding_indices": [
+                2, 6, 10, 3, 7, 11
+            ],
+            "autocast": {
+                "device_type": "cuda"
+            },
+            "text_encoder_load_args": {
+                "variant": "fp16",
+                "torch_dtype": {
+                    "_class_name": "get_class",
+                    "class_name": "torch.float16"
+                }
+            }
+        },
+        "training_config": {},
+        "inference_config": {
+            "scheduler": "diffusers.DPMSolverMultistepScheduler",
+            "guidance_scale": 3,
+            "inference_steps": 50,
+            "preview_image_size": [
+                448, 252
+            ]
+        },
+        "model": {
+            "_class_name": "dwm.models.crossview_temporal_unet.UNetCrossviewTemporalConditionModel",
+            "addition_time_embed_dim": 256,
+            "block_out_channels": [
+                320,
+                640,
+                1280,
+                1280
+            ],
+            "cross_attention_dim": 1024,
+            "down_block_types": [
+                "CrossAttnDownBlockCrossviewTemporal",
+                "CrossAttnDownBlockCrossviewTemporal",
+                "CrossAttnDownBlockCrossviewTemporal",
+                "DownBlockCrossviewTemporal"
+            ],
+            "in_channels": 4,
+            "layers_per_block": 2,
+            "num_attention_heads": [
+                5,
+                10,
+                20,
+                20
+            ],
+            "out_channels": 4,
+            "projection_class_embeddings_input_dim": 2816,
+            "sample_size": 96,
+            "transformer_layers_per_block": 1,
+            "up_block_types": [
+                "UpBlockCrossviewTemporal",
+                "CrossAttnUpBlockCrossviewTemporal",
+                "CrossAttnUpBlockCrossviewTemporal",
+                "CrossAttnUpBlockCrossviewTemporal"
+            ],
+            "enable_crossview": true,
+            "enable_rowwise_crossview": true,
+            "enable_temporal": true,
+            "enable_rowwise_temporal": true,
+            "merge_factor": 2
+        },
+        "pretrained_model_name_or_path": "/mnt/storage/user/wuzehuan/Downloads/models/stable-diffusion-2-1",
+        "model_checkpoint_path": "/mnt/storage/user/wuzehuan/Tasks/ctsd_21_tirda_nwao/checkpoints/30000.pth",
+        "model_load_state_args": {}
+    },
+    "inputs": [
+        {
+            "latent_shape": [
+                1, 1, 6, 4, 32, 56
+            ],
+            "batch": {
+                "fps": [0.0],
+                "pts": [
+                    [
+                        [0.0, 8.0, 16.0, 23.0, -17.0, -7.0]
+                    ]
+                ],
+                "camera_transforms": [
+                    [
+                        [
+                            [
+                                [0.8225460648536682, 0.006478320807218552, 0.568661630153656, 1.5752559900283813],
+                                [-0.5686843395233154, 0.016434065997600555, 0.8223916888237, 0.5005193948745728],
+                                [-0.004017705097794533, -0.999843955039978, 0.017201894894242287, 1.5069602727890015],
+                                [0.0, 0.0, 0.0, 1.0]
+                            ],
+                            [
+                                [0.010260207578539848, 0.008433448150753975, 0.9999117851257324, 1.7220057249069214],
+                                [-0.9998725652694702, 0.012316255830228329, 0.010155927389860153, 0.004754533059895039],
+                                [-0.01222951989620924, -0.9998885989189148, 0.008558740839362144, 1.49491286277771],
+                                [0.0, 0.0, 0.0, 1.0]
+                            ],
+                            [
+                                [-0.8439797163009644, 0.01645551435649395, 0.5361226201057434, 1.580825686454773],
+                                [-0.5361413955688477, 0.003621074603870511, -0.844120442867279, -0.4990787208080292],
+                                [-0.015831775963306427, -0.999858021736145, 0.005766368471086025, 1.517493724822998],
+                                [0.0, 0.0, 0.0, 1.0]
+                            ],
+                            [
+                                [-0.9237360954284668, -0.002603030065074563, -0.3830206096172333, 1.059451699256897],
+                                [0.3830243647098541, -0.011446056887507439, -0.923667311668396, -0.46720296144485474],
+                                [-0.0019797419663518667, -0.9999310970306396, 0.011570160277187824, 1.5505086183547974],
+                                [0.0, 0.0, 0.0, 1.0]
+                            ],
+                            [
+                                [0.00921541079878807, -0.006800496950745583, -0.9999344348907471, 0.05524611100554466],
+                                [0.9998947978019714, 0.011264881119132042, 0.009138433262705803, 0.010788236744701862],
+                                [0.011201996356248856, -0.9999133944511414, 0.0069035920314490795, 1.5679428577423096],
+                                [0.0, 0.0, 0.0, 1.0]
+                            ],
+                            [
+                                [0.9478787183761597, -0.0089232437312603, -0.3185064196586609, 1.0485204458236694],
+                                [0.31862178444862366, 0.018789710476994514, 0.9476956725120544, 0.4830581247806549],
+                                [-0.0024718763306736946, -0.9997836351394653, 0.020653506740927696, 1.5621016025543213],
+                                [0.0, 0.0, 0.0, 1.0]
+                            ]
+                        ]
+                    ]
+                ],
+                "camera_intrinsics": [
+                    [
+                        [
+                            [
+                                [1257.862548828125, 0.0, 827.2410888671875],
+                                [0.0, 1257.862548828125, 450.9154968261719],
+                                [0.0, 0.0, 1.0]
+                            ],
+                            [
+                                [1252.8131103515625, 0.0, 826.588134765625],
+                                [0.0, 1252.8131103515625, 469.9846496582031],
+                                [0.0, 0.0, 1.0]
+                            ],
+                            [
+                                [1256.74853515625, 0.0, 817.7887573242188],
+                                [0.0, 1256.74853515625, 451.9541931152344],
+                                [0.0, 0.0, 1.0]
+                            ],
+                            [
+                                [1249.962890625, 0.0, 825.3768310546875],
+                                [0.0, 1249.962890625, 462.54815673828125],
+                                [0.0, 0.0, 1.0]
+                            ],
+                            [
+                                [796.8910522460938, 0.0, 857.7774047851562],
+                                [0.0, 796.8910522460938, 476.8848876953125],
+                                [0.0, 0.0, 1.0]
+                            ],
+                            [
+                                [1254.986083984375,0.0, 829.576904296875],
+                                [0.0, 1254.986083984375, 467.1680603027344],
+                                [0.0, 0.0, 1.0]
+                            ]
+                        ]
+                    ]
+                ],
+                "image_size": [
+                    [
+                        [
+                            [1600, 900],
+                            [1600, 900],
+                            [1600, 900],
+                            [1600, 900],
+                            [1600, 900],
+                            [1600, 900]
+                        ]
+                    ]
+                ],
+                "crossview_mask": [
+                    [
+                        [true, true, false, false, false, true],
+                        [true, true, true, false, false, false],
+                        [false, true, true, true, false, false],
+                        [false, false, true, true, true, false],
+                        [false, false, false, true, true, true],
+                        [true, false, false, false, true, true]
+                    ]
+                ],
+                "clip_text": [
+                    [
+                        [
+                            "daytime. overcast, dry road. urban street corner. fire hydrant, pedestrians, vehicles, buildings, traffic signs. A street scene with a fire hydrant, pedestrians crossing the road, parked cars, and buildings. There's also a no trucks sign visible.",
+                            "daytime. overcast, wet road. urban street scene. cars, pedestrians, traffic lights, trees, brick buildings. A city street with parked cars, a black SUV in motion, and brick buildings lining the road. A pedestrian is visible on the sidewalk, and traffic lights are present at an intersection.",
+                            "daytime. overcast, wet road. urban street corner. cars, pedestrians, traffic signs, orange cone, brick building. A street scene with a bus stop sign, two pedestrians, and parked cars. The architecture suggests an urban setting, possibly in the U.S., given the style of the street signs and license plate on the car.",
+                            "daytime. overcast, wet road. urban street corner. revolving door entrance, brick building facade, windows, parked cars. The image shows a modern building entrance with an arched glass door, flanked by two brick walls and large windows. There's no visible activity or signage indicating the building's purpose.",
+                            "daytime. partly cloudy, wet road. urban street intersection. cars, pedestrians, traffic lights, buildings, trees. A city street scene with traffic lights, pedestrians, a bus lane sign, and tall buildings in the background under a cloudy sky.",
+                            "daytime. overcast, wet road. urban street scene. car, brick building with signage, window boxes, lamppost. A grey sedan parked on the street in front of a brick building labeled \"Yawkey Center for Children and Learning.\" There's a round sign with text, but it's not clear."
+                        ]
+                    ]
+                ]
+            },
+            "output_type": "pt"
+        },
+        {
+            "latent_shape": [1, 1, 6, 4, 32, 56],
+            "batch": {
+                "fps": [0.0],
+                "pts": [
+                    [
+                        [0.0, 8.0, 16.0, 23.0, -17.0, -7.0]
+                    ]
+                ],
+                "camera_transforms": [
+                    [
+                        [
+                            [
+                                [0.8225460648536682, 0.006478320807218552, 0.568661630153656, 1.5752559900283813],
+                                [-0.5686843395233154, 0.016434065997600555, 0.8223916888237, 0.5005193948745728],
+                                [-0.004017705097794533, -0.999843955039978, 0.017201894894242287, 1.5069602727890015],
+                                [0.0, 0.0, 0.0, 1.0]
+                            ],
+                            [
+                                [0.010260207578539848, 0.008433448150753975, 0.9999117851257324, 1.7220057249069214],
+                                [-0.9998725652694702, 0.012316255830228329, 0.010155927389860153, 0.004754533059895039],
+                                [-0.01222951989620924, -0.9998885989189148, 0.008558740839362144, 1.49491286277771],
+                                [0.0, 0.0, 0.0, 1.0]
+                            ],
+                            [
+                                [-0.8439797163009644, 0.01645551435649395, 0.5361226201057434, 1.580825686454773],
+                                [-0.5361413955688477, 0.003621074603870511, -0.844120442867279, -0.4990787208080292],
+                                [-0.015831775963306427, -0.999858021736145, 0.005766368471086025, 1.517493724822998],
+                                [0.0, 0.0, 0.0, 1.0]
+                            ],
+                            [
+                                [-0.9237360954284668, -0.002603030065074563, -0.3830206096172333, 1.059451699256897],
+                                [0.3830243647098541, -0.011446056887507439, -0.923667311668396, -0.46720296144485474],
+                                [-0.0019797419663518667, -0.9999310970306396, 0.011570160277187824, 1.5505086183547974],
+                                [0.0, 0.0, 0.0, 1.0]
+                            ],
+                            [
+                                [0.00921541079878807, -0.006800496950745583, -0.9999344348907471, 0.05524611100554466],
+                                [0.9998947978019714, 0.011264881119132042, 0.009138433262705803, 0.010788236744701862],
+                                [0.011201996356248856, -0.9999133944511414, 0.0069035920314490795, 1.5679428577423096],
+                                [0.0, 0.0, 0.0, 1.0]
+                            ],
+                            [
+                                [0.9478787183761597, -0.0089232437312603, -0.3185064196586609, 1.0485204458236694],
+                                [0.31862178444862366, 0.018789710476994514, 0.9476956725120544, 0.4830581247806549],
+                                [-0.0024718763306736946, -0.9997836351394653, 0.020653506740927696, 1.5621016025543213],
+                                [0.0, 0.0, 0.0, 1.0]
+                            ]
+                        ]
+                    ]
+                ],
+                "camera_intrinsics": [
+                    [
+                        [
+                            [
+                                [1257.862548828125, 0.0, 827.2410888671875],
+                                [0.0, 1257.862548828125, 450.9154968261719],
+                                [0.0, 0.0, 1.0]
+                            ],
+                            [
+                                [1252.8131103515625, 0.0, 826.588134765625],
+                                [0.0, 1252.8131103515625, 469.9846496582031],
+                                [0.0, 0.0, 1.0]
+                            ],
+                            [
+                                [1256.74853515625, 0.0, 817.7887573242188],
+                                [0.0, 1256.74853515625, 451.9541931152344],
+                                [0.0, 0.0, 1.0]
+                            ],
+                            [
+                                [1249.962890625, 0.0, 825.3768310546875],
+                                [0.0, 1249.962890625, 462.54815673828125],
+                                [0.0, 0.0, 1.0]
+                            ],
+                            [
+                                [796.8910522460938, 0.0, 857.7774047851562],
+                                [0.0, 796.8910522460938, 476.8848876953125],
+                                [0.0, 0.0, 1.0]
+                            ],
+                            [
+                                [1254.986083984375,0.0, 829.576904296875],
+                                [0.0, 1254.986083984375, 467.1680603027344],
+                                [0.0, 0.0, 1.0]
+                            ]
+                        ]
+                    ]
+                ],
+                "image_size": [
+                    [
+                        [
+                            [1600, 900],
+                            [1600, 900],
+                            [1600, 900],
+                            [1600, 900],
+                            [1600, 900],
+                            [1600, 900]
+                        ]
+                    ]
+                ],
+                "crossview_mask": [
+                    [
+                        [true, true, false, false, false, true],
+                        [true, true, true, false, false, false],
+                        [false, true, true, true, false, false],
+                        [false, false, true, true, true, false],
+                        [false, false, false, true, true, true],
+                        [true, false, false, false, true, true]
+                    ]
+                ],
+                "clip_text": [
+                    [
+                        [
+                            "night. snowy. urban street corner. fire hydrant, pedestrians, vehicles, buildings, traffic signs. A street scene with a fire hydrant, pedestrians crossing the road, parked cars with snow, and buildings. There's also a no trucks sign visible.",
+                            "night. snowy. urban street scene. cars, pedestrians, traffic lights, trees, brick buildings. A city street with parked cars, a black SUV in motion, and brick buildings lining the snowy road. A pedestrian is visible on the sidewalk, and traffic lights are present at an intersection.",
+                            "night. snowy. urban street corner. cars, pedestrians, traffic signs, orange cone, brick building. A street scene with a bus stop sign, two pedestrians, and parked cars with snow. The architecture suggests an urban setting, possibly in the U.S., given the style of the street signs and license plate on the car.",
+                            "night. snowy. urban street corner. revolving door entrance, brick building facade, windows, parked cars. The image shows a modern building entrance with an arched glass door, flanked by two brick walls and large windows. There's no visible activity or signage indicating the building's purpose.",
+                            "night. snowy. urban street intersection. cars, pedestrians, traffic lights, buildings, trees. A city street scene with traffic lights, pedestrians, a bus lane sign.",
+                            "night. snowy. urban street scene. car, brick building with signage, window boxes, lamppost. A texi covered with snow parked on the street in front of a brick building. There's a round sign with text, but it's not clear."
+                        ]
+                    ]
+                ]
+            },
+            "output_type": "pt"
+        }
+    ]
+}
