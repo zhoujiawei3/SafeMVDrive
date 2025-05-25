@@ -14,7 +14,7 @@ This repository contains the code for the following work:
 <br>
 
 
-<p align="center">
+<!-- <p align="center">
   <div align="center">Adversarial vehicle suddenly cuts in; ego vehicle slightly steers right to avoid.</div>
   <video src="assets/adv_gif/01-ezgif.com-video-to-gif-converter.gif" width="100%" style="max-width: 100%; height: auto;" autoplay loop muted playsinline></video>
 
@@ -26,7 +26,7 @@ This repository contains the code for the following work:
 
   <div align="center">Front adversarial vehicle suddenly slows down; ego vehicle changes lane and decelerates to avoid.</div>
   <video src="assets/adv_gif/04-ezgif.com-video-to-gif-converter.gif" width="100%" style="max-width: 100%; height: auto;" autoplay loop muted playsinline></video>
-</p>
+</p> -->
 
 
 <p align="center">
