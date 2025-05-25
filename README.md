@@ -231,9 +231,7 @@ data_infos = list(sorted(data["infos"], key=lambda e: (e["scene_token"], e["time
 5. Run `{ROOT_OF_UNIAD}/tools/uniad_dist_eval.sh` to evaluate.
 
 By default, we use the output `obj_box_col` as the basis for calculating the **sample level collision rate**.
-
 To compute the **scene-level collision rate** instead, please modify the following lines accordingly:
-
 [`planning_metrics.py` (Lines 176–179)](https://github.com/zhoujiawei3/SafeMVDrive/blob/5991bab339ce2fd26f384686c11fa3bc6c7be6a9/eval/UniAD/projects/mmdet3d_plugin/uniad/dense_heads/planning_head_plugin/planning_metrics.py#L176-L179)
 
 
