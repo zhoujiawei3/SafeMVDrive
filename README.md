@@ -28,6 +28,18 @@ This repository contains the code for the following work:
   <video src="assets/adv_gif/04-ezgif.com-video-to-gif-converter.gif" width="100%" style="max-width: 100%; height: auto;" autoplay loop muted playsinline></video>
 </p>
 
+
+<p align="center">
+  <div align="center">Leapfroging</div>
+  <img src="assets/adv_gif/01-ezgif.com-video-to-gif-converter.gif" width="100%" style="max-width: 100%; height: auto;" />
+  <div align="center">Overtaking from the left lane</div>
+  <img src="assets/adv_gif/02-ezgif.com-video-to-gif-converter.gif" width="100%" style="max-width: 100%; height: auto;" />
+  <div align="center">Frontal encounter, U-turn, and surpassing</div>
+  <img src="assets/adv_gif/03-ezgif.com-video-to-gif-converter.gif" width="100%" style="max-width: 100%; height: auto;" />
+  <div align="center">Zooming past from the left lane</div>
+  <img src="assets/adv_gif/04-ezgif.com-video-to-gif-converter.gif" width="100%" style="max-width: 100%; height: auto;" />
+</p>
+
 ## Abstract
 
 Safety-critical scenarios are rare yet pivotal for evaluating and enhancing the robustness of autonomous driving systems. While existing methods generate safety-critical driving trajectories, simulations, or single-view videos, they fall short of meeting the demands of advanced end-to-end autonomous systems (E2E AD), which require real-world, multi-view video data. To bridge this gap, we introduce SafeMVDrive, the first framework designed to generate high-quality, safety-critical, multi-view driving videos grounded in real-world domains. SafeMVDrive strategically integrates a safety-critical trajectory generator with an advanced multi-view video generator. To tackle the challenges inherent in this integration, we first enhance scene understanding ability of the trajectory generator by incorporating visual context -- which is previously unavailable to such generator -- and leveraging a GRPO-finetuned vision-language model to achieve more realistic and context-aware trajectory generation. Second, recognizing that existing multi-view video generators struggle to render realistic collision events, we introduce a two-stage, controllable trajectory generation mechanism that produces collision-evasion trajectories, ensuring both video quality and safety-critical fidelity. Finally, we employ a diffusion-based multi-view video generator to synthesize high-quality safety-critical driving videos from the generated trajectories. Experiments conducted on an E2E AD planner demonstrate a significant increase in collision rate when tested with our generated data, validating the effectiveness of SafeMVDrive in stress-testing planning modules.
