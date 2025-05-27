@@ -1,6 +1,8 @@
 
 <div align="center">
+
 ![*SafeMVDrive](assets/banner.png)
+
 <h3><strong>Multi-view Safety-Critical Driving Video Synthesis in the Real World Domain</strong></h3>
 
 <br>
