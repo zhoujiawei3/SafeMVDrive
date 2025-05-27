@@ -1,16 +1,16 @@
 
 <div align="center">
-    ![*SafeMVDrive](assets/banner.png)
-    <h3><strong>Multi-view Safety-Critical Driving Video Synthesis in the Real World Domain</strong></h3>
+![*SafeMVDrive](assets/banner.png)
+<h3><strong>Multi-view Safety-Critical Driving Video Synthesis in the Real World Domain</strong></h3>
 
-    <br>
-    <div align="center">
-    <img src="https://img.shields.io/github/license/zhoujiawei3/SafeMVDrive" alt="License">
-    <a href="https://arxiv.org/abs/2505.17727"><img alt='arXiv' src="https://img.shields.io/badge/arXiv-2505.17727-red"></a>
-    <a href="https://huggingface.co/datasets/JiaweiZhou/SafeMVDrive"><img alt='Dataset' src="https://img.shields.io/badge/Dataset-SafeMVDrive-blue"></a>
-    <a href="https://zhoujiawei3.github.io/SafeMVDrive/"><img alt='Project Page' src="https://img.shields.io/badge/Webpage-SafeMVDrive-green"></a>
-    </div>
-    <br>
+<br>
+<div align="center">
+  <img src="https://img.shields.io/github/license/zhoujiawei3/SafeMVDrive" alt="License">
+  <a href="https://arxiv.org/abs/2505.17727"><img alt='arXiv' src="https://img.shields.io/badge/arXiv-2505.17727-red"></a>
+  <a href="https://huggingface.co/datasets/JiaweiZhou/SafeMVDrive"><img alt='Dataset' src="https://img.shields.io/badge/Dataset-SafeMVDrive-blue"></a>
+  <a href="https://zhoujiawei3.github.io/SafeMVDrive/"><img alt='Project Page' src="https://img.shields.io/badge/Webpage-SafeMVDrive-green"></a>
+</div>
+<br>
 </div>
 
 <!-- <p align="center">
