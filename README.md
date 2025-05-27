@@ -1,8 +1,5 @@
-# SafeMVDrive: Multi-view Safety-Critical Driving Video Synthesis in the Real World Domain
-
-This repository contains the code for the following work:
-> Challenger: SafeMVDrive: Multi-view Safety-Critical Driving Video Synthesis in the Real World Domain
-> Authors: Jiawei Zhou, Linye Lyu, Zhuotao Tian, Cheng Zhuo, Yu Li
+![*SafeMVDrive](assets/banner.png)
+<h3><strong>Multi-view Safety-Critical Driving Video Synthesis in the Real World Domain</strong></h3>
 
 <br>
 <div align="center">
@@ -43,6 +40,14 @@ This repository contains the code for the following work:
 ## Abstract
 
 Safety-critical scenarios are rare yet pivotal for evaluating and enhancing the robustness of autonomous driving systems. While existing methods generate safety-critical driving trajectories, simulations, or single-view videos, they fall short of meeting the demands of advanced end-to-end autonomous systems (E2E AD), which require real-world, multi-view video data. To bridge this gap, we introduce SafeMVDrive, the first framework designed to generate high-quality, safety-critical, multi-view driving videos grounded in real-world domains. SafeMVDrive strategically integrates a safety-critical trajectory generator with an advanced multi-view video generator. To tackle the challenges inherent in this integration, we first enhance scene understanding ability of the trajectory generator by incorporating visual context -- which is previously unavailable to such generator -- and leveraging a GRPO-finetuned vision-language model to achieve more realistic and context-aware trajectory generation. Second, recognizing that existing multi-view video generators struggle to render realistic collision events, we introduce a two-stage, controllable trajectory generation mechanism that produces collision-evasion trajectories, ensuring both video quality and safety-critical fidelity. Finally, we employ a diffusion-based multi-view video generator to synthesize high-quality safety-critical driving videos from the generated trajectories. Experiments conducted on an E2E AD planner demonstrate a significant increase in collision rate when tested with our generated data, validating the effectiveness of SafeMVDrive in stress-testing planning modules.
+
+## Pipeline
+SafeMVDrive has the following pipeline:
+1. **VLM-based Adversarial Vehicle Selector:** Identifies the adversarial vehicle from multi-view images.  
+2. **Two-Stage Evasion Trajectory Generator:** First generates a collision trajectory, then refines it into a realistic evasion trajectory.  
+3. **Trajectory-to-Video Generator:** Synthesizes multi-view videos from the generated trajectories.
+![SafeMVDrive Pipeline](assets/pipeline.png)
+
 
 ## Getting Started
  The codebase is organized into two primary modules:
@@ -123,11 +128,10 @@ bash VLM_selector.sh
 You can modify the `DATA_COUNT` in the script to change the number of samples randomly selected from the nuscenes val dataset.
 
 ### 3. Two-stage Evasion Trajectory Generation
-
-#### Setup
-
 Test on CUDA 11.3.
 
+
+#### Setup
 ```bash
 conda create -n safemvdrive-trajectory python=3.9
 conda activate safemvdrive-trajectory
@@ -136,16 +140,18 @@ pip install -r requirements.txt --extra-index-url https://download.pytorch.org/w
 pip install pip==24.0 # 
 pip install numpy==1.23.4 # ignore confict
 pip install -e .
-```
-
-Install a customized version of `trajdata`
-```bash
-git clone https://github.com/AIasd/trajdata.git
 cd trajdata
 pip install -r trajdata_requirements.txt
 pip install -e .
 ```
 
+<!-- Install a customized version of `trajdata`
+```bash
+git clone https://github.com/AIasd/trajdata.git
+cd trajdata
+pip install -r trajdata_requirements.txt
+pip install -e .
+``` -->
 Install `Pplan`
 ```bash
 git clone https://github.com/NVlabs/spline-planner.git Pplan
@@ -163,13 +169,12 @@ bash two-stage-simulate.sh
 
 ### 4. Trajectory-to-Video Generation
 
+Test on CUDA 12.4.
 #### Setup
-
-Software requirement:
-* git (>= 2.25)
 
 ```
 conda create -n safemvdrive-video python=3.9
+conda activate safemvdrive-video
 python -m pip install torch==2.5.1 torchvision==0.20.1
 cd T2VGenerator
 git submodule update --init --recursive

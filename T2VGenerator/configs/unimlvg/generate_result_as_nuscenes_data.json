@@ -18,7 +18,6 @@
                 "nuscenes/v1.0-trainval-zip/interp_12Hz_trainval_collide.zip",
                 "nuscenes/v1.0-trainval-zip/new_samples.zip",
                 "nuscenes/v1.0-trainval-zip/new_sweeps.zip"
-
             ]
         },
         "device_mesh": {
@@ -189,7 +188,7 @@
                 "use_zero_convs": true
             }
         },
-        "pretrained_model_name_or_path": "stabilityai/stable-diffusion-3-medium",
+        "pretrained_model_name_or_path": "/data/Diffusion_models/stable-diffusion-3-medium-diffusers",
         "model_checkpoint_path": "../weights/T2VGenerator/ctsd_unimlvg_tirda_bm_nwa_60k.pth",
         "metrics": {
             "fid": {

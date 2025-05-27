@@ -1,6 +1,6 @@
 PYTHONPATH="$(dirname $0)/..":$PYTHONPATH \
 
-data_path="../nuscenes"
+data_path="../../nuscenes"
 data_version="v1.0-collision"
 ann_frequency=$1
 PY_ARGS=${@:2}

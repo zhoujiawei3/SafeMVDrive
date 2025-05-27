@@ -18,18 +18,18 @@ NUSCENES_ROOT="../../nuscenes"
 
 # Run the first script to generate the input
 echo "Running data generation..."
-# python ./tools/generate/generate_input_for_VLM_for_val.py \
-#   --output_name ${OUTPUT_NAME} \
-#   --output_dir ${OUTPUT_DIR} \
-#   --data_count ${DATA_COUNT} \
-#   --random_seed ${RANDOM_SEED} \
-#   --split_type ${SPLIT_TYPE} \
-#   --dataroot ${NUSCENES_ROOT}
+python ./tools/generate/generate_input_for_VLM_for_val.py \
+  --output_name ${OUTPUT_NAME} \
+  --output_dir ${OUTPUT_DIR} \
+  --data_count ${DATA_COUNT} \
+  --random_seed ${RANDOM_SEED} \
+  --split_type ${SPLIT_TYPE} \
+  --dataroot ${NUSCENES_ROOT}
 
-# # Run the second script to convert the JSON and add additional keys
-# echo "Running JSON conversion and augmentation..."
-# python ./tools/convert/json_convert_add_ego_V_add_noType_collide_question_add_additional_key.py \
-#   --input_path ${RAW_INPUT_JSON_PATH}
+# Run the second script to convert the JSON and add additional keys
+echo "Running JSON conversion and augmentation..."
+python ./tools/convert/json_convert_add_ego_V_add_noType_collide_question_add_additional_key.py \
+  --input_path ${RAW_INPUT_JSON_PATH}
 
 # VLM select
 echo "Running VLM selection..."

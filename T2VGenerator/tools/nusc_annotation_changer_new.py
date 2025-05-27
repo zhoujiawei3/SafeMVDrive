@@ -497,6 +497,7 @@ def generate_sample_data_with_pose(args, nusc, trajectory_datas):
                             ego_pose['translation'] = nusc.get('ego_pose',nusc.get('sample_data', this_sample_data['token'])['ego_pose_token'])['translation']
                             ego_pose['rotation'] = nusc.get('ego_pose',nusc.get('sample_data', this_sample_data['token'])['ego_pose_token'])['rotation']
                         else:
+                            print(args.dataset_type)
                             raise Exception("wrong type") 
                         new_ego_pose_list.append(ego_pose)
 

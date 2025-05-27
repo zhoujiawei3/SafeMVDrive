@@ -181,9 +181,7 @@ def run_scene_editor(device,eval_cfg, save_cfg, data_to_disk, render_to_video, r
         
         env_builder = EnvUnifiedBuilder(eval_config=eval_cfg, exp_config=exp_config, device=device)
         env = env_builder.get_env()
-        print(eval_cfg)
-        print(exp_config)
-        exit()
+
     else:
         raise NotImplementedError("{} is not a valid env".format(eval_cfg.env))
 
