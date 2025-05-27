@@ -1,7 +1,7 @@
 # SafeMVDrive: Multi-view Safety-Critical Driving Video Synthesis in the Real World Domain
 
 This repository contains the code for the following work:
-> Challenger: SafeMVDrive: Multi-view Safety-Critical Driving Video Synthesis in the Real World Domain
+> SafeMVDrive: Multi-view Safety-Critical Driving Video Synthesis in the Real World Domain
 > Authors: Jiawei Zhou, Linye Lyu, Zhuotao Tian, Cheng Zhuo, Yu Li
 
 <br>
