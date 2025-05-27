@@ -1,15 +1,17 @@
-![*SafeMVDrive](assets/banner.png)
-<h3><strong>Multi-view Safety-Critical Driving Video Synthesis in the Real World Domain</strong></h3>
 
-<br>
 <div align="center">
-  <img src="https://img.shields.io/github/license/zhoujiawei3/SafeMVDrive" alt="License">
-  <a href="https://arxiv.org/abs/2505.17727"><img alt='arXiv' src="https://img.shields.io/badge/arXiv-2505.17727-red"></a>
-  <a href="https://huggingface.co/datasets/JiaweiZhou/SafeMVDrive"><img alt='Dataset' src="https://img.shields.io/badge/Dataset-SafeMVDrive-blue"></a>
-  <a href="https://zhoujiawei3.github.io/SafeMVDrive/"><img alt='Project Page' src="https://img.shields.io/badge/Webpage-SafeMVDrive-green"></a>
-</div>
-<br>
+    ![*SafeMVDrive](assets/banner.png)
+    <h3><strong>Multi-view Safety-Critical Driving Video Synthesis in the Real World Domain</strong></h3>
 
+    <br>
+    <div align="center">
+    <img src="https://img.shields.io/github/license/zhoujiawei3/SafeMVDrive" alt="License">
+    <a href="https://arxiv.org/abs/2505.17727"><img alt='arXiv' src="https://img.shields.io/badge/arXiv-2505.17727-red"></a>
+    <a href="https://huggingface.co/datasets/JiaweiZhou/SafeMVDrive"><img alt='Dataset' src="https://img.shields.io/badge/Dataset-SafeMVDrive-blue"></a>
+    <a href="https://zhoujiawei3.github.io/SafeMVDrive/"><img alt='Project Page' src="https://img.shields.io/badge/Webpage-SafeMVDrive-green"></a>
+    </div>
+    <br>
+</div>
 
 <!-- <p align="center">
   <div align="center">Adversarial vehicle suddenly cuts in; ego vehicle slightly steers right to avoid.</div>
@@ -43,11 +45,10 @@ Safety-critical scenarios are rare yet pivotal for evaluating and enhancing the 
 
 ## Pipeline
 SafeMVDrive has the following pipeline:
+![SafeMVDrive Pipeline](assets/pipeline.png)
 1. **VLM-based Adversarial Vehicle Selector:** Identifies the adversarial vehicle from multi-view images.  
 2. **Two-Stage Evasion Trajectory Generator:** First generates a collision trajectory, then refines it into a realistic evasion trajectory.  
 3. **Trajectory-to-Video Generator:** Synthesizes multi-view videos from the generated trajectories.
-![SafeMVDrive Pipeline](assets/pipeline.png)
-
 
 ## Getting Started
  The codebase is organized into two primary modules:
