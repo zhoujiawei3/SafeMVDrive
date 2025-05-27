@@ -235,6 +235,24 @@ To compute the **scene-level collision rate** instead, please modify the followi
 [`planning_metrics.py` (Lines 176–179)](https://github.com/zhoujiawei3/SafeMVDrive/blob/5991bab339ce2fd26f384686c11fa3bc6c7be6a9/eval/UniAD/projects/mmdet3d_plugin/uniad/dense_heads/planning_head_plugin/planning_metrics.py#L176-L179)
 
 
+## Citation
+
+If you find this repository helpful, please consider citing our paper:
+
+```bibtex
+@article{zhou2025safemvdrive,
+  title={SafeMVDrive: Multi-view Safety-Critical Driving Video Synthesis in the Real World Domain},
+  author={Zhou, Jiawei and Lyu, Linye and Tian, Zhuotao and Zhuo Cheng and Li, Yu},
+  journal={arXiv preprint arXiv:2505.17727},
+  year={2025}
+}
+```
+
+## Acknowledgements
+
+We would like to thank the developers of [CTG](https://github.com/NVlabs/CTG) and [OpenDWM](https://github.com/SenseTime-FVG/OpenDWM), upon which our work is built.
+
+
 
 
 
