@@ -251,7 +251,7 @@ If you find this repository helpful, please consider citing our paper:
 ```bibtex
 @article{zhou2025safemvdrive,
   title={SafeMVDrive: Multi-view Safety-Critical Driving Video Synthesis in the Real World Domain},
-  author={Zhou, Jiawei and Lyu, Linye and Tian, Zhuotao and Zhuo Cheng and Li, Yu},
+  author={Zhou, Jiawei and Lyu, Linye and Tian, Zhuotao and Zhuo, Cheng and Li, Yu},
   journal={arXiv preprint arXiv:2505.17727},
   year={2025}
 }
