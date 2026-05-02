@@ -236,6 +236,9 @@ class GRPOModelConfig(ModelConfig):
 
 
 def main(script_args, training_args, model_args):
+    # PyTorch>=2.6 defaults torch.load(weights_only=True), which can break full-state resume.
+    os.environ.setdefault("TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD", "1")
+
     # Get reward functions
     reward_funcs = [reward_funcs_registry[func] for func in script_args.reward_funcs]
     print("reward_funcs:", reward_funcs)
@@ -320,10 +323,7 @@ def main(script_args, training_args, model_args):
     )
 
     # Train and push the model to the Hub
-    # if list(pathlib.Path(training_args.output_dir).glob("checkpoint-*")):
-    #     trainer.train(resume_from_checkpoint=True)
-    # else:
-    trainer.train()
+    trainer.train(resume_from_checkpoint=training_args.resume_from_checkpoint)
 
     # Save and push to hub
     trainer.save_model(training_args.output_dir)

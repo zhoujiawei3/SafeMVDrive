@@ -5,7 +5,10 @@
 
 <h3><strong>Multi-view Safety-Critical Driving Video Synthesis in the Real World Domain</strong></h3>
 
-<br>
+<p align="center">
+  <strong>🎉 Accepted to ICML 2026! 🎉</strong>
+</p>
+
 <div align="center">
   <img src="https://img.shields.io/github/license/zhoujiawei3/SafeMVDrive" alt="License">
   <a href="https://arxiv.org/abs/2505.17727"><img alt='arXiv' src="https://img.shields.io/badge/arXiv-2505.17727-red"></a>

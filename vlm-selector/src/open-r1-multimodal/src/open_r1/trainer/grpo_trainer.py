@@ -546,12 +546,45 @@ class Qwen2VLGRPOTrainer(Trainer):
         std_grouped_rewards = std_grouped_rewards.repeat_interleave(self.num_generations, dim=0)
         advantages = (rewards - mean_grouped_rewards) / (std_grouped_rewards + 1e-4)
 
-        # x - x.detach() allows for preserving gradients from x
-        per_token_loss = torch.exp(per_token_logps - per_token_logps.detach()) * advantages.unsqueeze(1)
-        per_token_loss = -(per_token_loss - self.beta * per_token_kl)
-        # print(f"per_token_loss.shape{per_token_loss.shape}")
-        # print(f"completion_mask.shape{completion_mask.shape}")
-        loss = ((per_token_loss * completion_mask).sum(dim=1) / completion_mask.sum(dim=1)).mean()
+        script_args = getattr(self, "script_args", None)
+        rl_mode = getattr(script_args, "rl_mode", "GRPO") if script_args else "GRPO"
+
+        if rl_mode == "GSPO":
+            # --- GSPO Logic ---
+            # 1. Token-level log ratios: log(\pi_\theta) - log(\pi_{\theta_{old}})
+            log_ratio_raw = per_token_logps - per_token_logps.detach()
+            
+            # 2. Sequence lengths |y_i|
+            seq_lengths = completion_mask.sum(dim=1).clamp(min=1)
+            
+            # 3. Sequence-level average log-ratio: (1 / |y_i|) * \sum (log_ratio_raw)
+            avg_log_ratio = (log_ratio_raw * completion_mask).sum(dim=1) / seq_lengths
+            
+            # 4. Exponentiate to get sequence-level importance ratio s_i(\theta)
+            s_i = torch.exp(avg_log_ratio)
+            
+            # 5. Compute surrogate losses with sequence-level advantage A_i
+            clip_eps = 0.2  # Epsilon for clipping
+            surr1 = s_i * advantages
+            surr2 = torch.clamp(s_i, 1 - clip_eps, 1 + clip_eps) * advantages
+            
+            # 6. Sequence-level GSPO objective
+            seq_gspo_loss = torch.min(surr1, surr2)
+            
+            # 7. Sequence-level KL divergence penalty (averaged over sequence)
+            seq_kl = (per_token_kl * completion_mask).sum(dim=1) / seq_lengths
+            
+            # 8. Final loss (negated for minimization)
+            loss = -(seq_gspo_loss - self.beta * seq_kl).mean()
+
+        else:
+            # --- Default GRPO Logic ---
+            # x - x.detach() allows for preserving gradients from x
+            per_token_loss = torch.exp(per_token_logps - per_token_logps.detach()) * advantages.unsqueeze(1)
+            per_token_loss = -(per_token_loss - self.beta * per_token_kl)
+            # print(f"per_token_loss.shape{per_token_loss.shape}")
+            # print(f"completion_mask.shape{completion_mask.shape}")
+            loss = ((per_token_loss * completion_mask).sum(dim=1) / completion_mask.sum(dim=1)).mean()
 
         # Log the metrics
         completion_length = self.accelerator.gather_for_metrics(completion_mask.sum(1)).float().mean().item()
