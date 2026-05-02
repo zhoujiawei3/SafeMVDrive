@@ -74,10 +74,12 @@ def approximate_can_bus_info_highres(nusc, sample):
         pose_prev = get_ego_pose_from_sample_data(nusc, sd_prev_token)
         pose_next = get_ego_pose_from_sample_data(nusc, sd_next_token)
 
+        # === 当前速度：中心差分 ===
         vel_global_now, dt_v = compute_velocity_centered(pose_prev, pose_next)
         vel_ego = global_to_ego(vel_global_now, rot_q_now)
 
-
+        # === 加速度 ===
+        # 需要获取 prev2 和 next2，用它们和 prev/next 做中心差分速度
         sd_prev2_token = nusc.get('sample_data', sd_prev_token)['prev']
         sd_next2_token = nusc.get('sample_data', sd_next_token)['next']
 
@@ -96,6 +98,7 @@ def approximate_can_bus_info_highres(nusc, sample):
             gravity_global = np.array([0.0, 0.0, 9.81])
             accel_ego = global_to_ego(accel_global + gravity_global, rot_q_now)
 
+            # === 角速度 ===
             q_prev = Quaternion(pose_prev['rotation'])
             q_next = Quaternion(pose_next['rotation'])
             rot_rate_prev = compute_rotation_rate(q_prev, rot_q_now, dt1)
@@ -103,6 +106,7 @@ def approximate_can_bus_info_highres(nusc, sample):
             rot_rate_global = (rot_rate_prev + rot_rate_next) / 2
             rot_rate_ego = global_to_ego(rot_rate_global, rot_q_now)
 
+    # 若缺帧，则退化为单边差分
     else:
         if sd_next_token != "":
             pose_next = get_ego_pose_from_sample_data(nusc, sd_next_token)
@@ -155,7 +159,8 @@ def create_nuscenes_infos(root_path,
                           can_bus_root_path,
                           info_prefix,
                           version='v1.0-trainval',
-                          max_sweeps=10):
+                          max_sweeps=10,
+                          use_approximate_can_bus=False):
     """Create info file of nuscene dataset.
 
     Given the raw data, generate its related info file in pkl format.
@@ -167,6 +172,8 @@ def create_nuscenes_infos(root_path,
             Default: 'v1.0-trainval'
         max_sweeps (int): Max number of sweeps.
             Default: 10
+        use_approximate_can_bus (bool): Whether to use approximate can_bus info.
+            Default: False
     """
     from nuscenes.nuscenes import NuScenes
     from nuscenes.can_bus.can_bus_api import NuScenesCanBus
@@ -174,6 +181,8 @@ def create_nuscenes_infos(root_path,
     nusc = NuScenes(version=version, dataroot=root_path, verbose=True)
     nusc_can_bus = NuScenesCanBus(dataroot=can_bus_root_path)
     available_scenes = get_available_scenes(nusc)
+    import random
+    rng = random.Random(42)
     from nuscenes.utils import splits
     available_vers = ['v1.0-trainval', 'v1.0-test', 'v1.0-mini','v1.0-collision']
     assert version in available_vers
@@ -189,11 +198,12 @@ def create_nuscenes_infos(root_path,
     elif version == 'v1.0-collision':
         train_scenes=[]
         val_scenes=[s['name'] for s in available_scenes]
+        # train_scenes=rng.sample([s['name'] for s in available_scenes], 33)
+        # val_scenes =[s['name'] for s in available_scenes if s['name'] not in train_scenes]
     else:
         raise ValueError('unknown')
 
-    # filter existing scenes.
-    
+    # filter existing scenes.   
     available_scene_names = [s['name'] for s in available_scenes]
     train_scenes = list(
         filter(lambda x: x in available_scene_names, train_scenes))
@@ -215,7 +225,8 @@ def create_nuscenes_infos(root_path,
             len(train_scenes), len(val_scenes)))
 
     train_nusc_infos, val_nusc_infos = _fill_trainval_infos(
-        nusc, nusc_can_bus, train_scenes, val_scenes, test, max_sweeps=max_sweeps)
+        nusc, nusc_can_bus, train_scenes, val_scenes, test, max_sweeps=max_sweeps,
+        use_approximate_can_bus=use_approximate_can_bus)
 
     metadata = dict(version=version)
     if test:
@@ -343,7 +354,8 @@ def _fill_trainval_infos(nusc,
                          train_scenes,
                          val_scenes,
                          test=False,
-                         max_sweeps=10):
+                         max_sweeps=10,
+                         use_approximate_can_bus=False):
     """Generate the train/val infos from the raw data.
 
     Args:
@@ -353,6 +365,7 @@ def _fill_trainval_infos(nusc,
         test (bool): Whether use the test mode. In the test mode, no
             annotations can be accessed. Default: False.
         max_sweeps (int): Max number of sweeps. Default: 10.
+        use_approximate_can_bus (bool): Whether to use approximate can_bus info. Default: False.
 
     Returns:
         tuple[list[dict]]: Information of training set and validation set
@@ -370,7 +383,12 @@ def _fill_trainval_infos(nusc,
         lidar_path, boxes, _ = nusc.get_sample_data(lidar_token)
 
         mmcv.check_file_exist(lidar_path)
-        can_bus = _get_can_bus_info(nusc, nusc_can_bus, sample)
+        
+        # 根据 use_approximate_can_bus 参数选择 can_bus 获取方式
+        if use_approximate_can_bus:
+            can_bus = approximate_can_bus_info_highres(nusc, sample)
+        else:
+            can_bus = _get_can_bus_info(nusc, nusc_can_bus, sample)
         ##
         info = {
             'lidar_path': lidar_path,

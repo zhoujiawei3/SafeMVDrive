@@ -11,6 +11,78 @@ from skimage.draw import polygon
 from pytorch_lightning.metrics.metric import Metric
 from ..occ_head_plugin import calculate_birds_eye_view_parameters, gen_dx_bx
 import copy
+from shapely.geometry import Polygon
+
+X, Y, Z, W, L, H, SIN_YAW, COS_YAW, VX, VY, VZ = list(range(11))  # undecoded
+CNS, YNS = 0, 1  # centerness and yawness indices in quality
+YAW = 6  # decoded
+
+def box3d_to_corners(box3d):
+    device = box3d.device if isinstance(box3d, torch.Tensor) else None
+    if isinstance(box3d, torch.Tensor):
+        box3d = box3d.detach().cpu().numpy()
+    corners_norm = np.stack(np.unravel_index(np.arange(8), [2] * 3), axis=1)
+    corners_norm = corners_norm[[0, 1, 3, 2, 4, 5, 7, 6]]
+    # use relative origin [0.5, 0.5, 0]
+    corners_norm = corners_norm - np.array([0.5, 0.5, 0.5])
+    corners = box3d[:, None, [W, L, H]] * corners_norm.reshape([1, 8, 3])
+
+    # rotate around z axis
+    rot_cos = np.cos(box3d[:, YAW])
+    rot_sin = np.sin(box3d[:, YAW])
+    rot_mat = np.tile(np.eye(3)[None], (box3d.shape[0], 1, 1))
+    rot_mat[:, 0, 0] = rot_cos
+    rot_mat[:, 0, 1] = -rot_sin
+    rot_mat[:, 1, 0] = rot_sin
+    rot_mat[:, 1, 1] = rot_cos
+    corners = (rot_mat[:, None] @ corners[..., None]).squeeze(axis=-1)
+    corners += box3d[:, None, :3]
+    
+    if device is not None:
+        corners = torch.tensor(corners, device=device, dtype=torch.float32)
+    return corners
+
+def check_collision(ego_box, boxes):
+    '''
+        ego_box: tensor with shape [7], [x, y, z, w, l, h, yaw]
+        boxes: tensor with shape [N, 7]
+    '''
+    if  boxes.shape[0] == 0:
+        return False
+
+    # follow uniad, add a 0.5m offset
+    ego_box[0] += 0.5 * torch.cos(ego_box[6])
+    ego_box[1] += 0.5 * torch.sin(ego_box[6])
+    ego_corners_box = box3d_to_corners(ego_box.unsqueeze(0))[0, [0, 3, 7, 4], :2]
+    corners_box = box3d_to_corners(boxes)[:, [0, 3, 7, 4], :2]
+    ego_poly = Polygon([(point[0], point[1]) for point in ego_corners_box])
+    for i in range(len(corners_box)):
+        box_poly =  Polygon([(point[0], point[1]) for point in corners_box[i]])
+        collision = ego_poly.intersects(box_poly)
+        if collision:
+            return True
+
+    return False
+
+def get_yaw(traj):
+    start = traj[0]
+    end = traj[-1]
+    dist = torch.linalg.norm(end - start, dim=-1)
+    if dist < 0.5:
+        return traj.new_ones(traj.shape[0]) * np.pi / 2
+
+    zeros = traj.new_zeros((1, 2))
+    traj_cat = torch.cat([zeros, traj], dim=0)
+    yaw = traj.new_zeros(traj.shape[0]+1)
+    yaw[..., 1:-1] = torch.atan2(
+        traj_cat[..., 2:, 1] - traj_cat[..., :-2, 1],
+        traj_cat[..., 2:, 0] - traj_cat[..., :-2, 0],
+    )
+    yaw[..., -1] = torch.atan2(
+        traj_cat[..., -1, 1] - traj_cat[..., -2, 1],
+        traj_cat[..., -1, 0] - traj_cat[..., -2, 0],
+    )
+    return yaw[1:]
 
 
 class PlanningMetric(Metric):
@@ -20,21 +92,11 @@ class PlanningMetric(Metric):
         compute_on_step: bool = False,
     ):
         super().__init__(compute_on_step=compute_on_step)
-        dx, bx, _ = gen_dx_bx([-50.0, 50.0, 0.5], [-50.0, 50.0, 0.5], [-10.0, 10.0, 20.0])
-        dx, bx = dx[:2], bx[:2]
-        self.dx = nn.Parameter(dx, requires_grad=False)
-        self.bx = nn.Parameter(bx, requires_grad=False)
-
-        _, _, self.bev_dimension = calculate_birds_eye_view_parameters(
-            [-50.0, 50.0, 0.5], [-50.0, 50.0, 0.5], [-10.0, 10.0, 20.0]
-        )
-        self.bev_dimension = self.bev_dimension.numpy()
-
-        self.W = 1.85  # ego width
-        self.H = 4.084  # ego length
-        self.imu_to_lidar_offset = 0.985793  # distance between IMU and LiDAR
+        self.W = 1.85
+        self.H = 4.084
 
         self.n_future = n_future
+        # self.reset()
 
         # Modified states to track binary collision indicators rather than per-timestep counts
         self.add_state("obj_col", default=torch.zeros(self.n_future), dist_reduce_fx="sum")
@@ -43,94 +105,48 @@ class PlanningMetric(Metric):
         self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
 
 
-    def evaluate_single_coll(self, traj, segmentation, input_gt=None, gt_traj=None, index=None):
-        '''
-        gt_segmentation
-        traj: torch.Tensor (n_future, 2)
-        segmentation: torch.Tensor (n_future, 200, 200)
-        '''
-        pts = np.array([
-            [-self.H / 2. + 0.5, self.W / 2.],
-            [self.H / 2. + 0.5, self.W / 2.],
-            [self.H / 2. + 0.5, -self.W / 2.],
-            [-self.H / 2. + 0.5, -self.W / 2.],
-        ])
-        pts = (pts - self.bx.cpu().numpy() ) / (self.dx.cpu().numpy())
-        pts[:, [0, 1]] = pts[:, [1, 0]]
-        rr, cc = polygon(pts[:,1], pts[:,0])
-        rc = np.concatenate([rr[:,None], cc[:,None]], axis=-1)
-        n_future, _ = traj.shape
-        trajs = traj.view(n_future, 1, 2)
-        trajs[:,:,[0,1]] = trajs[:,:,[1,0]] # can also change original tensor
+    def evaluate_single_coll(self, traj, fut_boxes):
+        n_future = traj.shape[0]
+        yaw = get_yaw(traj)
+        ego_box = traj.new_zeros((n_future, 7))
+        ego_box[:, :2] = traj
+        ego_box[:, 3:6] = ego_box.new_tensor([self.H, self.W, 1.56])
+        ego_box[:, 6] = yaw
+        collision = torch.zeros(n_future, dtype=torch.bool)
 
-        # trajs_ = copy.deepcopy(trajs)
-        trajs = trajs / self.dx #.to(trajs.device)
-        trajs= trajs.cpu().numpy() + rc # (n_future, 32, 2)
-
-        r = trajs[:,:,0].astype(np.int32)
-        r = np.clip(r, 0, self.bev_dimension[0] - 1)
-
-        c = trajs[:,:,1].astype(np.int32)
-        c = np.clip(c, 0, self.bev_dimension[1] - 1)
-
-        collision = np.full(n_future, False)
         for t in range(n_future):
-            rr = r[t]
-            cc = c[t]
-            I = np.logical_and(
-                np.logical_and(rr >= 0, rr < self.bev_dimension[0]),
-                np.logical_and(cc >= 0, cc < self.bev_dimension[1]),
-            )
-            collision[t] = np.any(segmentation[t, rr[I], cc[I]].cpu().numpy())
-        return torch.from_numpy(collision).to(device=traj.device)
-    def evaluate_coll(self, trajs, gt_trajs, segmentation):
-        '''
-        trajs: torch.Tensor (B, n_future, 2)
-        gt_trajs: torch.Tensor (B, n_future, 2)
-        segmentation: torch.Tensor (B, n_future, 200, 200)
-        '''
+            ego_box_t = ego_box[t].clone()
+            boxes = fut_boxes[t][0].clone()
+            collision[t] = check_collision(ego_box_t, boxes)
+        return collision
+
+
+
+    def evaluate_coll(self, trajs, gt_trajs, fut_boxes):
         B, n_future, _ = trajs.shape
         trajs = trajs * torch.tensor([-1, 1], device=trajs.device)
         gt_trajs = gt_trajs * torch.tensor([-1, 1], device=gt_trajs.device)
 
-        obj_coll_sum = torch.zeros(n_future, device=segmentation.device)
-        obj_box_coll_sum = torch.zeros(n_future, device=segmentation.device)
+        obj_coll_sum = torch.zeros(n_future, device=trajs.device)
+        obj_box_coll_sum = torch.zeros(n_future, device=trajs.device)
 
+        assert B == 1, 'only supprt bs=1'
         for i in range(B):
-            gt_box_coll = self.evaluate_single_coll(gt_trajs[i], segmentation[i])
+            gt_trajs_copy = copy.deepcopy(gt_trajs[i])
+            gt_trajs_copy = torch.cat([torch.zeros(1, 2, device=gt_trajs.device), gt_trajs_copy], dim=0)
+            gt_box_coll = self.evaluate_single_coll(gt_trajs_copy[i], fut_boxes)
             if gt_box_coll[0]==1:
-                return torch.zeros_like(gt_box_coll),torch.zeros_like(gt_box_coll),True
-            xx, yy = trajs[i,:,0], trajs[i,:,1]
-            yi = ((yy - self.bx[0]) / self.dx[0]).long()
-            xi = ((xx - self.bx[1]) / self.dx[1]).long()
-
-            m1 = torch.logical_and(
-                torch.logical_and(yi >= 0, yi < self.bev_dimension[0]),
-                torch.logical_and(xi >= 0, xi < self.bev_dimension[1]),
-            )
-            m1 = torch.logical_and(m1, torch.logical_not(gt_box_coll))
-
-            ti = torch.arange(n_future, device=trajs.device)
-            obj_coll_sum[ti[m1]] += segmentation[i, ti[m1], yi[m1], xi[m1]].long()
-
-
-            m2 = torch.logical_not(gt_box_coll)
-
-            seg_mask = torch.ones_like(m2, dtype=torch.bool)
-            for t in range(n_future):
-                ratio = (segmentation[i, t]).float().mean()
-                if ratio > 0.9:
-                    seg_mask[t] = False
-            m2 = seg_mask
-            box_coll = self.evaluate_single_coll(trajs[i], segmentation[i])
+                return torch.zeros_like(gt_box_coll[1:]).to(self.obj_box_col.device),torch.zeros_like(gt_box_coll[1:]).to(self.obj_box_col.device),True
+            gt_box_coll = gt_box_coll[1:]
+            fut_boxes = fut_boxes[1:]
+            box_coll = self.evaluate_single_coll(trajs[i], fut_boxes)
             
-            effective_coll = torch.logical_and(box_coll, m2)
-            coll_time_idx = torch.nonzero(effective_coll, as_tuple=False)
+            coll_time_idx = torch.nonzero(box_coll, as_tuple=False)
             if coll_time_idx.numel() > 0:
                 first_box_coll = coll_time_idx[0].item()
                 obj_box_coll_sum[first_box_coll:] += 1
 
-        return obj_coll_sum, obj_box_coll_sum,False
+        return obj_coll_sum.to(self.obj_box_col.device), obj_box_coll_sum.to(self.obj_box_col.device),False
 
     def compute_L2(self, trajs, gt_trajs, gt_trajs_mask):
         '''
@@ -141,21 +157,28 @@ class PlanningMetric(Metric):
         '''
         return torch.sqrt((((trajs[:, :, :2] - gt_trajs[:, :, :2]) ** 2) * gt_trajs_mask).sum(dim=-1)) 
 
-    def update(self, trajs, gt_trajs, gt_trajs_mask, segmentation,scene_token=None):
+    def update(self, trajs, gt_trajs, gt_trajs_mask,  fut_boxes=None, scene_token=None):
         '''
         Update metrics with new batch
         
         trajs: torch.Tensor (B, n_future, 3)
         gt_trajs: torch.Tensor (B, n_future, 3)
-        segmentation: torch.Tensor (B, n_future, 200, 200)
+        segmentation: torch.Tensor (B, n_future, 200, 200) or None
+        fut_boxes: list of future boxes or None
         '''
+        # 如果gt_trajs_mask 有非0值则跳过此次更新:
+        if not gt_trajs_mask.all(): ## for incomplete gt, we do not count this sample
+            print("Incomplete gt, skip this sample")
+            return
+        
         assert trajs.shape == gt_trajs.shape
         # print('nfuture:',trajs.shape)
         trajs[..., 0] = - trajs[..., 0]
         gt_trajs[..., 0] = - gt_trajs[..., 0]
         L2 = self.compute_L2(trajs, gt_trajs, gt_trajs_mask)
-        obj_coll_binary, obj_box_coll_binary,jump = self.evaluate_coll(trajs[:,:,:2], gt_trajs[:,:,:2], segmentation)
+        obj_coll_binary, obj_box_coll_binary,jump = self.evaluate_coll(trajs[:,:,:2], gt_trajs[:,:,:2], fut_boxes)
         if not jump:
+            
             self.total += len(trajs)
         # Update binary collision counters
         self.obj_col += obj_coll_binary
@@ -170,12 +193,20 @@ class PlanningMetric(Metric):
         where collision rate is defined as percentage of trajectories that have 
         at least one collision point.
         '''
-
+        # 从临时文件读取场景数，如果不存在则使用默认值 72
+        
+        # with open('/tmp/nuscenes_scene_count.txt', 'r') as f:
+        #     num_scenes = int(f.read().strip())
+            # print('Read num_scenes from file:', num_scenes)
+        num_scenes = 41
+        # print('\ntotal_length:',self.total)
+        # print("\nself.obj_box_col:",self.obj_box_col)
         return {
-            'obj_col': self.obj_col / self.total,
-            #sample-level collision rate
-            'obj_box_col': self.obj_box_col / self.total, 
-            # scene-level collision rate
-            # 'obj_box_col': self.obj_box_col / {number of the scene in the datasets}  
-            'L2': self.L2 / self.total
+            # Return collision rate as percentage of trajectories with any collision
+            # 'obj_col': self.obj_col / self.total,
+            # 'obj_box_col': self.obj_box_col / self.total,
+            # 'L2': self.L2 / self.total
+            'obj_col': self.obj_box_col / self.total, #实际上就是sample-level CR
+            'obj_box_col': self.obj_box_col / num_scenes, #实际上就是scene-level CR
+            'L2': self.L2 / num_scenes
         }

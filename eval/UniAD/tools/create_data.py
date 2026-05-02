@@ -11,7 +11,8 @@ def nuscenes_data_prep(root_path,
                        version,
                        dataset_name,
                        out_dir,
-                       max_sweeps=10):
+                       max_sweeps=10,
+                       use_approximate_can_bus=False):
     """Prepare data related to nuScenes dataset.
 
     Related data consists of '.pkl' files recording basic infos,
@@ -24,9 +25,11 @@ def nuscenes_data_prep(root_path,
         dataset_name (str): The dataset class name.
         out_dir (str): Output directory of the groundtruth database info.
         max_sweeps (int): Number of input consecutive frames. Default: 10
+        use_approximate_can_bus (bool): Whether to use approximate can_bus info. Default: False
     """
     nuscenes_converter.create_nuscenes_infos(
-        root_path, out_dir, can_bus_root_path, info_prefix, version=version, max_sweeps=max_sweeps)
+        root_path, out_dir, can_bus_root_path, info_prefix, version=version, max_sweeps=max_sweeps,
+        use_approximate_can_bus=use_approximate_can_bus)
 
     if version == 'v1.0-test':
         info_test_path = osp.join(
@@ -86,6 +89,11 @@ parser.add_argument(
 parser.add_argument('--extra-tag', type=str, default='nuscenes')
 parser.add_argument(
     '--workers', type=int, default=4, help='number of threads to be used')
+parser.add_argument(
+    '--use-approximate-can-bus',
+    action='store_true',
+    default=False,
+    help='use approximate can_bus info instead of real can_bus data')
 args = parser.parse_args()
 
 if __name__ == '__main__':
@@ -98,7 +106,8 @@ if __name__ == '__main__':
             version=train_version,
             dataset_name='NuScenesDataset',
             out_dir=args.out_dir,
-            max_sweeps=args.max_sweeps)
+            max_sweeps=args.max_sweeps,
+            use_approximate_can_bus=args.use_approximate_can_bus)
         test_version = f'{args.version}-test'
         nuscenes_data_prep(
             root_path=args.root_path,
@@ -107,7 +116,8 @@ if __name__ == '__main__':
             version=test_version,
             dataset_name='NuScenesDataset',
             out_dir=args.out_dir,
-            max_sweeps=args.max_sweeps)
+            max_sweeps=args.max_sweeps,
+            use_approximate_can_bus=args.use_approximate_can_bus)
     elif args.dataset == 'nuscenes' and args.version == 'v1.0-mini':
         train_version = f'{args.version}'
         nuscenes_data_prep(
@@ -117,7 +127,8 @@ if __name__ == '__main__':
             version=train_version,
             dataset_name='NuScenesDataset',
             out_dir=args.out_dir,
-            max_sweeps=args.max_sweeps)
+            max_sweeps=args.max_sweeps,
+            use_approximate_can_bus=args.use_approximate_can_bus)
     elif args.dataset == 'nuscenes' and args.version == 'v1.0-collision':
         train_version = f'{args.version}'
         nuscenes_data_prep(
@@ -127,4 +138,5 @@ if __name__ == '__main__':
             version=train_version,
             dataset_name='NuScenesDataset',
             out_dir=args.out_dir,
-            max_sweeps=args.max_sweeps)
+            max_sweeps=args.max_sweeps,
+            use_approximate_can_bus=args.use_approximate_can_bus)
